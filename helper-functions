@@ -1,0 +1,21 @@
+#!/bin/bash
+
+function rememberHowToBindCopyToTmux() { echo "https://medium.freecodecamp.org/tmux-in-practice-integration-with-system-clipboard-bcd72c62ff7b" && echo "don't forget to run in tmux console i.e. bind + :" && echo 'bind -T copy-mode-vi Enter send-keys -X copy-pipe-and-cancel "xclip -i -f -selection primary | xclip -i -selection clipboard"'; }
+function k8s () { export KUBECONFIG=/home/admin/k8s/$1; }
+function clipboard () { tr -d '\n' | xclip -selection clipboard; }
+function fullClipboard () { xclip -selection clipboard; }
+function saveKubeConfig () { az keyvault secret show --vault-name modelt-jenkins-vault --name $1-kubernetes-config --query value --output tsv > k8s-$1; }
+function getEventForDaysAgo () { date --date="${2:-0} days ago" +"%Y-%m-%dT00:00:00Z" | xargs az monitor activity-log list --correlation-id $1 --start-time; }
+function debugAnt () { export ANT_OPTS=-agentlib:jdwp=transport=dt_socket,address=5005,server=y,suspend=y && echo ANT_OPTS=$ANT_OPTS; }
+function debugAntOff () { unset ANT_OPTS && echo unsetting ANT_OPTS; }
+function debugGradle () { export GRADLE_OPTS="-XX:MaxPermSize=4g -XX:+HeapDumpOnOutOfMemoryError -Xmx4g -agentlib:jdwp=transport=dt_socket,server=n,suspend=y,address=5006" && echo GRADLE_OPTS=$GRADLE_OPTS; }
+function debugGradleOff () { unset GRADLE_OPTS && echo unsetting GRADLE_OPTS; } 
+function getXLine () { awk -v "line_number=${1:-1}" 'NR==line_number' | xargs -i sh -c "echo {} && clipboard {}"; }
+function getPidsFor { ps -aux | grep ${1} | awk '{print $2}'; }
+function rmiAllBuilderImages { docker images | grep "repository.hybris.com:5006/builder-local-test/zookeeper\|repository.hybris.com:5006/builder-local-test/hsql\|repository.hybris.com:5006/builder-local-test/solr\|repository.hybris.com:5006/builder-local-test/platform" | awk '{print $3}' | xargs -i docker rmi {} --force; }
+function debugDocker () { export ADDITIONAL_CATALINA_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"; }
+function debugDockerOff () { unset ADDITIONAL_CATALINA_OPTS; }
+function dockerIps () { docker ps | awk 'NR>1 {print $NF}' | xargs -i sh -c "printf {} && printf ' '  && docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' {}" | tac; }
+function getAddtionalCatalinaOptsForDockerDebug() { echo "-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"; }
+function watchDockerIps() { while true; do clear && dockerIps; sleep 2; done }
+function connectToMysqlWithHostAndUser { docker run -it --rm mysql mysql -h${1} -u${2} -p; }
