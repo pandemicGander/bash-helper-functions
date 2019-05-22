@@ -11,6 +11,7 @@ function debugAntOff () { unset ANT_OPTS && echo unsetting ANT_OPTS; }
 function debugGradle () { export GRADLE_OPTS="-XX:MaxPermSize=4g -XX:+HeapDumpOnOutOfMemoryError -Xmx4g -agentlib:jdwp=transport=dt_socket,server=n,suspend=y,address=5006" && echo GRADLE_OPTS=$GRADLE_OPTS; }
 function debugGradleOff () { unset GRADLE_OPTS && echo unsetting GRADLE_OPTS; } 
 function debugMaven() { export MAVEN_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"; export | grep -i 'MAVEN_OPTS'; }
+function debugMavenSunfire { echo "add to mvn and use port 5005: -Dmaven.surefire.debug"; }
 function debugMavenOff() { unset MAVEN_OPTS; }
 function getXLine () { awk -v "line_number=${1:-1}" 'NR==line_number' | xargs -i sh -c "echo {} && clipboard {}"; }
 function getPidsFor { ps -aux | grep ${1} | awk '{print $2}'; }
@@ -29,4 +30,8 @@ function startDockerDaemon { sudo systemctl start docker; }
 function eventsKubeEarliestFirst { kubectl get events --sort-by='{.lastTimestamp}' | tac; }
 function switchToMinikubeDocker { eval $(minikube docker-env); }
 function printCopyForTmuxSelection { echo "bind -T copy-mode-vi y send-keys -X copy-pipe-and-cancel 'xclip -in -selection clipboard'"; }
-function howToClearTmuxHistroy { echo "bind -n C-l send-keys -R \; clear-history \; send-keys C-l"; }
+function printCopyForTmuxSelection2 { echo "bind-key -T copy-mode-vi y send-keys -X copy-pipe 'xclip -selection clipboard ; tmux send-keys -X clear-selection'"; }
+function howToClearTmuxHistroy { echo "bind -n C-l send-keys C-l \; clear-history"; }
+function showProbeFork8s { kubectl get pods | awk 'FNR > 1 && $1 ~ /^acc|^back|^api/ {print $1}' | xargs -i kubectl exec -it {} -- java -cp /opt/hybris/bin/platform/ext/core/lib/jgroups-3.6.11.Final.jar org.jgroups.tests.Probe; }
+function forceKillAllHybrisPods { kubectl get pods | awk 'FNR > 1 && $1 ~ /^acc|^back|^api/ {print $1}' | xargs kubectl delete pod --grace-period=0 --force; }
+
